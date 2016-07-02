@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: io.netty:netty-all:5.0.0.Alpha2" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.13" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.1.3" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.1.3" level="project" />
+    <orderEntry type="library" name="Maven: com.jcraft:jzlib:1.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.json:json:20141113" level="project" />
+    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.10" level="project" />
+  </component>
+</module>
