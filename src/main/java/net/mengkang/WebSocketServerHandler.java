@@ -29,8 +29,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     // websocket 服务的 uri
     private static final String WEBSOCKET_PATH = "/websocket";
 
-    // 登录用户表 如果用户不存在于该表,收到的消息不广播,也不入库
-    private static Map<String, Client> loginClientMap = new HashMap<>();
     // 一个 ChannelGroup 代表一个直播频道
     private static Map<Integer, ChannelGroup> channelGroupMap = new HashMap<>();
 
@@ -104,21 +102,20 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         } else {
             ChannelFuture channelFuture = handshaker.handshake(ctx.channel(), req);
 
-            // 握手成功之后,业务逻辑 注册
+            // 握手成功之后,业务逻辑
             if (channelFuture.isSuccess()) {
                 if (client.getId() == 0) {
                     System.out.println(ctx.channel() + " 游客");
                     return;
                 }
 
-                loginClientMap.put(ctx.channel().id().asShortText(), client);
             }
         }
     }
 
     private void broadcast(ChannelHandlerContext ctx, WebSocketFrame frame) {
 
-        if (!loginClientMap.containsKey(ctx.channel().id().asShortText())) {
+        if (client.getId() == 0) {
             Response response = new Response(1001, "没登录不能聊天哦");
             String msg = new JSONObject(response).toString();
             ctx.channel().write(new TextWebSocketFrame(msg));
@@ -127,7 +124,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
         String request = ((TextWebSocketFrame) frame).text();
         System.out.println(" 收到 " + ctx.channel() + request);
-
 
         Response response = MessageService.sendMessage(client, request);
         String msg = new JSONObject(response).toString();
@@ -154,8 +150,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         broadcast(ctx, frame);
     }
 
-    private static void sendHttpResponse(
-            ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
+    private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
         if (res.status().code() != 200) {
             ByteBuf buf = Unpooled.copiedBuffer(res.status().toString(), CharsetUtil.UTF_8);
             res.content().writeBytes(buf);
@@ -183,16 +178,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        String channelId = ctx.channel().id().asShortText();
-
-        if (loginClientMap.containsKey(channelId)) {
-            loginClientMap.remove(channelId);
-        }
-
         if (client != null && channelGroupMap.containsKey(client.getRoomId())) {
             channelGroupMap.get(client.getRoomId()).remove(ctx.channel());
         }
-
     }
 
     private static String getWebSocketLocation(FullHttpRequest req) {
