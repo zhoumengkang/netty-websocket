@@ -1,0 +1,148 @@
+
+<html><head><title>Web Socket Performance Test</title></head>
+<body>
+<h2>WebSocket Performance Test</h2>
+<label>Connection Status:</label>
+<label id="connectionLabel"></label><br />
+<form onsubmit="return false;">
+    Message size:<input type="text" id="messageSize" value="1024"/><br>
+    Number of messages:<input type="text" id="nrMessages" value="100000"/><br>
+    Data Type:<input type="radio" name="type" id="typeText" value="text" checked>text<input type="radio" name="type" id="typeBinary" value="binary">binary<br>
+    Mode:<br>
+    <input type="radio" name="mode" id="modeSingle" value="single" checked>Wait for response after each messages<br>
+    <input type="radio" name="mode" id="modeAll" value="all">Send all messages and then wait for all responses<br>
+    <input type="checkbox" id="verifiyResponses">Verify responded messages<br>
+    <input type="button" value="Start Benchmark"
+           onclick="startBenchmark()" />
+    <h3>Output</h3>
+    <textarea id="output" style="width:500px;height:300px;"></textarea>
+    <br>
+    <input type="button" value="Clear" onclick="clearText()">
+</form>
+<script type="text/javascript">
+    var benchRunning = false;
+    var messageSize = 0;
+    var totalMessages = 0;
+    var rcvdMessages = 0;
+    var isBinary = true;
+    var isSingle = true;
+    var verifiyResponses = false;
+    var benchData = null;
+    var startTime;
+    var endTime;
+    var socket;
+    var output = document.getElementById('output');
+    var connectionLabel = document.getElementById('connectionLabel');
+    if (!window.WebSocket) {
+        window.WebSocket = window.MozWebSocket;
+    }
+    if (window.WebSocket) {
+        socket = new WebSocket("ws://localhost:8083/websocket?request=e2lkOjE7cmlkOjI2O3Rva2VuOiI0MzYwNjgxMWM3MzA1Y2NjNmFiYjJiZTExNjU3OWJmZCJ9");
+        socket.binaryType = 'arraybuffer';
+        socket.onmessage = function(event) {
+            if (verifiyResponses) {
+                if (isBinary) {
+                    if (!(event.data instanceof ArrayBuffer) ||
+                            event.data.byteLength != benchData.byteLength) {
+                        onInvalidResponse(benchData, event.data);
+                        return;
+                    } else {
+                        var v = new Uint8Array(event.data);
+                        for (var j = 0; j < benchData.byteLength; j++) {
+                            if (v[j] != benchData[j]) {
+                                onInvalidResponse(benchData, event.data);
+                                return;
+                            }
+                        }
+                    }
+                } else {
+                    if (event.data != benchData) {
+                        onInvalidResponse(benchData, event.data);
+                        return;
+                    }
+                }
+            }
+            rcvdMessages++;
+            if (rcvdMessages == totalMessages) {
+                onFinished();
+            } else if (isSingle) {
+                socket.send(benchData);
+            }
+        };
+        socket.onopen = function(event) {
+            connectionLabel.innerHTML = "Connected";
+        };
+        socket.onclose = function(event) {
+            benchRunning = false;
+            connectionLabel.innerHTML = "Disconnected";
+        };
+    } else {
+        alert("Your browser does not support Web Socket.");
+    }
+
+    function onInvalidResponse(sent,recvd) {
+        socket.close();
+        alert("Error: Sent data did not match the received data!");
+    }
+
+    function clearText() {
+        output.value="";
+    }
+
+    function createBenchData() {
+        if (isBinary) {
+            benchData = new Uint8Array(messageSize);
+            for (var i=0; i < messageSize; i++) {
+                benchData[i] += Math.floor(Math.random() * 255);
+            }
+        } else {
+            benchData = "";
+            for (var i=0; i < messageSize; i++) {
+                benchData += String.fromCharCode(Math.floor(Math.random() * (123 - 65) + 65));
+            }
+        }
+    }
+
+    function startBenchmark(message) {
+        if (!window.WebSocket || benchRunning) { return; }
+        if (socket.readyState == WebSocket.OPEN) {
+            isBinary = document.getElementById('typeBinary').checked;
+            isSingle = document.getElementById('modeSingle').checked;
+            verifiyResponses = document.getElementById('verifiyResponses').checked;
+            messageSize = parseInt(document.getElementById('messageSize').value);
+            totalMessages = parseInt(document.getElementById('nrMessages').value);
+            if (isNaN(messageSize) || isNaN(totalMessages)) return;
+            createBenchData();
+            output.value = output.value + '\nStarting Benchmark';
+            rcvdMessages = 0;
+            benchRunning = true;
+            startTime = new Date();
+            if (isSingle) {
+                socket.send(benchData);
+            } else {
+                for (var i = 0; i < totalMessages; i++) socket.send(benchData);
+            }
+        } else {
+            alert("The socket is not open.");
+        }
+    }
+
+    function onFinished() {
+        endTime = new Date();
+        var duration = (endTime - startTime) / 1000.0;
+        output.value = output.value + '\nTest took: ' + duration + 's';
+        var messagesPerS = totalMessages / duration;
+        output.value = output.value + '\nPerformance: ' + messagesPerS + ' Messages/s';
+        output.value = output.value + ' in each direction';
+        output.value = output.value + '\nRound trip: ' + 1000.0/messagesPerS + 'ms';
+        var throughput = messageSize * totalMessages / duration;
+        var throughputText;
+        if (isBinary) throughputText = throughput / (1024*1024) + ' MB/s';
+        else throughputText = throughput / (1000*1000) + ' MChars/s';
+        output.value = output.value + '\nThroughput: ' + throughputText;
+        output.value = output.value + ' in each direction';
+        benchRunning = false;
+    }
+</script>
+</body>
+</html>
