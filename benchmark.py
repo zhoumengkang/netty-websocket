@@ -11,7 +11,7 @@ import random
 import StringIO
 
 HOST = "127.0.0.1"
-PORT = 8081
+PORT = 8083
 
 # 并发连接数
 CONNECTIONS  = 200
