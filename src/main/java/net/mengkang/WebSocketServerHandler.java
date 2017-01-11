@@ -15,9 +15,9 @@ import net.mengkang.service.MessageService;
 import net.mengkang.service.RequestService;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.HOST;
 import static io.netty.handler.codec.http.HttpMethod.GET;
@@ -30,7 +30,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     private static final String WEBSOCKET_PATH = "/websocket";
 
     // 一个 ChannelGroup 代表一个直播频道
-    private static Map<Integer, ChannelGroup> channelGroupMap = new HashMap<>();
+    private static Map<Integer, ChannelGroup> channelGroupMap = new ConcurrentHashMap<>();
 
     // 本次请求的 code
     private static final String HTTP_REQUEST_STRING = "request";
