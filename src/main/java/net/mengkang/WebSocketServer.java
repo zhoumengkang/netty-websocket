@@ -11,7 +11,7 @@ import io.netty.handler.logging.LoggingHandler;
 
 public final class WebSocketServer {
 
-    private static final int PORT = 8083;
+    private static final int PORT = Config.getInt("server.port");
 
     public static void main(String[] args) throws Exception {
 
