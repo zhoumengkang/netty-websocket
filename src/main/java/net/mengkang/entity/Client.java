@@ -4,7 +4,7 @@ package net.mengkang.entity;
  * Created by zhoumengkang on 16/7/2.
  */
 public class Client {
-    private Long id;
+    private long id;
     private int roomId;
 
     public Client() {
@@ -12,11 +12,11 @@ public class Client {
         roomId = 0;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
