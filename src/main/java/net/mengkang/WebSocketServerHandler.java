@@ -35,7 +35,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     // 本次请求的 code
     private static final String HTTP_REQUEST_STRING = "request";
 
-    private Client client = null;
+    private Client client;
 
     private WebSocketServerHandshaker handshaker;
 
