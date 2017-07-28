@@ -9,3 +9,7 @@ Run `net.mengkang.WebSocketServer` in IDE, Then you can open the `client.html` i
 ## benchmark
 
 you can use the script `banchmark.py` in command line.
+
+## demo
+
+https://mengkang.net/demo/websocket/2.html
